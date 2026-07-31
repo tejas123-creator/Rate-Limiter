@@ -72,34 +72,6 @@ public ResponseEntity<List<Plan>> retrieve() {
 }
 ```
 
----
-### Testing
-
-[Testcontainers](https://github.com/testcontainers/testcontainers-java) have been utilized to effectively test the core functionality of Rate limiting in the application.
-
-The below two essential tests can be examined to gain insight into the functionality and behavior of the rate limiting feature employed in the application:
-
-* [RateLimitingServiceIT](https://github.com/hardikSinghBehl/rate-limiting-api-spring-boot/blob/main/src/test/java/com/behl/overseer/service/RateLimitingServiceIT.java)
-* [JokeControllerIT](https://github.com/hardikSinghBehl/rate-limiting-api-spring-boot/blob/main/src/test/java/com/behl/overseer/controller/JokeControllerIT.java)
-
-To run the entire Unit test and Integration test classes, the below commands can be executed respectively.
-
-```bash
-mvn test
-```
-```bash
-mvn integration-test
-```
-
----
-### Local Setup
-The below given commands can be executed in the project's base directory to build an image and start required container(s). Docker compose will initiate a MySQL and Redis container as well, with the backend swagger-ui accessible at `http://localhost:8080/swagger-ui.html`
-```bash
-sudo docker-compose build
-```
-```bash
-sudo docker-compose up -d
-```
 
 ---
 ### Visual Walkthrough
