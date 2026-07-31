@@ -72,7 +72,7 @@ public ResponseEntity<List<Plan>> retrieve() {
 }
 ```
 
-
+below is the visual walkthrough of the applicaiton 
 ---
 ### Visual Walkthrough
 
