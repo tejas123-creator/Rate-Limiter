@@ -16,12 +16,12 @@
 	<version>1.0.0</version>
 	<name>rate-limiting-api-spring-boot</name>
 	<description>backend application imposing rate limit on private API endpoints using token bucket algorithm</description>
-
 	<properties>
 		<java.version>21</java.version>
 		<jjwt.version>0.12.5</jjwt.version>
 		<bucket4j.version>8.9.0</bucket4j.version>
 		<springdoc.version>2.3.0</springdoc.version>
+		<lombok.version>1.18.42</lombok.version>
 	</properties>
 
 	<developers>
@@ -120,6 +120,7 @@
 			<artifactId>mysql</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 
 	<build>

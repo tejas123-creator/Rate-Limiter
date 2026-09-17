@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn clean install -DskipITs
 RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
-FROM openjdk:21
+FROM eclipse-temurin:21-jre
 ARG DEPENDENCY=/backend/target/dependency
 COPY --from=backend ${DEPENDENCY}/BOOT-INF/lib /app/lib
 COPY --from=backend ${DEPENDENCY}/META-INF /app/META-INF
