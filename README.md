@@ -71,10 +71,3 @@ public ResponseEntity<List<Plan>> retrieve() {
     return ResponseEntity.ok(response);
 }
 ```
-
-below is the visual walkthrough of the applicaiton 
----
-### Visual Walkthrough
-
-https://github.com/hardikSinghBehl/rate-limiting-api-spring-boot/assets/69693621/8a14800f-1fed-4ad7-8606-d8015d7f66a1
-
