@@ -30,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Authentication", description = "Endpoints for user account and authentication management")
 public class AuthenticationController {
 
+	// Handles account creation, password hashing, login validation, and JWT generation.
 	private final UserService userService;
 
 	@PublicEndpoint
@@ -45,6 +46,7 @@ public class AuthenticationController {
 			@ApiResponse(responseCode = "400", description = "Invalid request body",
 					content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))) })
 	public ResponseEntity<HttpStatus> createUser(@Valid @RequestBody final UserCreationRequestDto userCreationRequest) {
+		// @Valid checks the request DTO before an account is written to MySQL.
 		userService.create(userCreationRequest);
 		return ResponseEntity.status(HttpStatus.CREATED).build();
 	}
@@ -60,6 +62,7 @@ public class AuthenticationController {
 					content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))) })
 	public ResponseEntity<TokenSuccessResponseDto> login(
 			@Valid @RequestBody final UserLoginRequestDto userLoginRequest) {
+		// Credentials are validated by the service; a successful result contains a JWT.
 		final var response = userService.login(userLoginRequest);
 		return ResponseEntity.ok(response);
 	}

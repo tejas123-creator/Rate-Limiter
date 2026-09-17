@@ -15,6 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Schema(title = "TokenSuccessResponse", accessMode = Schema.AccessMode.READ_ONLY)
 public class TokenSuccessResponseDto {
 
+	// Signed JWT the client sends as a Bearer token when calling private endpoints.
 	private String accessToken;
 
 }

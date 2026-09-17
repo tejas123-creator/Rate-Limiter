@@ -19,9 +19,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PlanService {
 
+	// Reads available plans and verifies a requested plan ID.
 	private final PlanRepository planRepository;
+	// Removes an old Redis bucket after a user changes plan.
 	private final RateLimitingService rateLimitingService;
+	// Stores and queries each user's active plan.
 	private final UserPlanMappingRepository userPlanMappingRepository;
+	// Retrieves the user ID established earlier by JwtAuthenticationFilter.
 	private final AuthenticatedUserIdProvider authenticatedUserIdProvider;
 
 	/**
@@ -37,25 +41,30 @@ public class PlanService {
 	 * @throws InvalidPlanException if no plan exists with provided-id.
 	 */
 	public void update(@NonNull final PlanUpdationRequestDto planUpdationRequest) {
+		// The client provides only the desired plan ID; the current user comes from the JWT.
 		final var planId = planUpdationRequest.getPlanId();
 		final var isPlanIdValid = planRepository.existsById(planId);
 		if (Boolean.FALSE.equals(isPlanIdValid)) {
 			throw new InvalidPlanException("No plan exists in the system with provided-id");
 		}
 
+		// Identify the caller without trusting a user ID from the request body.
 		final var userId = authenticatedUserIdProvider.getUserId();
 		final var isExistingUserPlan = userPlanMappingRepository.isActivePlan(userId, planId);
 		if (Boolean.TRUE.equals(isExistingUserPlan)) {
 			return;
 		}
 
+		// Keep old mappings for history, but mark the previous active mapping inactive.
 		userPlanMappingRepository.deactivateCurrentPlan(userId);
 
+		// Create a fresh mapping that becomes the user's active plan.
 		final var newPlan = new UserPlanMapping();
 		newPlan.setUserId(userId);
 		newPlan.setPlanId(planId);
 		userPlanMappingRepository.save(newPlan);
 
+		// The next API call creates a Redis bucket using the newly selected limit.
 		rateLimitingService.reset(userId);
 	}
 
@@ -65,6 +74,7 @@ public class PlanService {
 	 * @return List of PlanResponseDto containing details of each available plan.
 	 */
 	public List<PlanResponseDto> retrieve() {
+		// Convert database entities into safe response DTOs rather than exposing entities directly.
 		return planRepository.findAll()
 				.stream()
 				.map(plan -> PlanResponseDto.builder()

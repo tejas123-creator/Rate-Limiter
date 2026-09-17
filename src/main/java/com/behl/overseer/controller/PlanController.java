@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Plan Management", description = "Endpoints for managing and retrieving available plan details")
 public class PlanController {
 
+	// Retrieves plans and changes the authenticated user's active plan.
 	private final PlanService planService;
 
 	@PublicEndpoint
@@ -40,6 +41,7 @@ public class PlanController {
 	@Operation(summary = "Retrieves all available plans", description = "Retrieves the list of available plans in the system")
 	@ApiResponse(responseCode = "200", description = "Plans retrieved successfully")
 	public ResponseEntity<List<PlanResponseDto>> retrieve() {
+		// Public endpoint used by a client before it creates a user account.
 		return ResponseEntity.ok(planService.retrieve());
 	}
 
@@ -56,6 +58,7 @@ public class PlanController {
 			@ApiResponse(responseCode = "400", description = "Invalid request body",
 					content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class)))})
 	public ResponseEntity<HttpStatus> update(@Valid @RequestBody final PlanUpdationRequestDto planUpdationRequest) {
+		// @BypassRateLimit allows an exhausted user to upgrade their plan.
 		planService.update(planUpdationRequest);
 		return ResponseEntity.ok().build();
 	}

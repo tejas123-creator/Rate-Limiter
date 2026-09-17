@@ -19,6 +19,7 @@ public class PlanUpdationRequestDto {
 
 	@NotNull
 	@Schema(requiredMode = RequiredMode.REQUIRED, description = "plan to be attached with user record")
+	// ID of the plan the authenticated user wants to activate.
 	private UUID planId;
 
 }

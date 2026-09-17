@@ -36,13 +36,18 @@ import lombok.RequiredArgsConstructor;
 @EnableConfigurationProperties(OpenApiConfigurationProperties.class)
 public class ApiEndpointSecurityInspector {
 
+	// Spring's runtime catalogue of controller methods and their URL mappings.
 	private final RequestMappingHandlerMapping requestHandlerMapping;
+	// Determines whether Swagger paths should be treated as public.
 	private final OpenApiConfigurationProperties openApiConfigurationProperties;
+	// Wildcard paths used by Swagger UI and the generated OpenAPI JSON document.
 	private static final List<String> SWAGGER_V3_PATHS = List.of("/swagger-ui**/**", "/v3/api-docs**/**");
 	
 	@Getter
+	// Paths of controller GET methods marked with @PublicEndpoint.
 	private List<String> publicGetEndpoints = new ArrayList<String>();
 	@Getter
+	// Paths of controller POST methods marked with @PublicEndpoint.
 	private List<String> publicPostEndpoints = new ArrayList<String>();
 	
 	/**
@@ -53,6 +58,7 @@ public class ApiEndpointSecurityInspector {
 	 */
 	@PostConstruct
 	public void init() {
+		// Scan controller mappings once at startup instead of using reflection on every request.
 		final var handlerMethods = requestHandlerMapping.getHandlerMethods();
 		handlerMethods.forEach((requestInfo, handlerMethod) -> {
 			if (handlerMethod.hasMethodAnnotation(PublicEndpoint.class)) {
@@ -68,6 +74,7 @@ public class ApiEndpointSecurityInspector {
 			}
 		});
 		
+		// Swagger needs to be public when documentation is enabled, otherwise its UI cannot load.
 		final var openApiEnabled = openApiConfigurationProperties.getOpenApi().isEnabled();
 		if (Boolean.TRUE.equals(openApiEnabled)) {
 			publicGetEndpoints.addAll(SWAGGER_V3_PATHS);
@@ -81,6 +88,7 @@ public class ApiEndpointSecurityInspector {
 	 * @return {@code true} if the request is to an unsecured API endpoint, {@code false} otherwise.
 	 */
 	public boolean isUnsecureRequest(@NonNull final HttpServletRequest request) {
+		// Compare the incoming method and URL against the startup-built public-path lists.
 		final var requestHttpMethod = HttpMethod.valueOf(request.getMethod());
 		var unsecuredApiPaths = getUnsecuredApiPaths(requestHttpMethod);
 		unsecuredApiPaths = Optional.ofNullable(unsecuredApiPaths).orElseGet(ArrayList::new);
@@ -95,6 +103,7 @@ public class ApiEndpointSecurityInspector {
 	 * @return A list of unsecured API paths for the specified HTTP method.s
 	 */
 	private List<String> getUnsecuredApiPaths(@NonNull final HttpMethod httpMethod) {
+		// Only GET and POST endpoints can currently be declared public in SecurityConfiguration.
 		switch (httpMethod) {
 			case GET:
 				return publicGetEndpoints;

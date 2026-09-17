@@ -16,19 +16,24 @@ import lombok.RequiredArgsConstructor;
 @EnableConfigurationProperties(OpenApiConfigurationProperties.class)
 public class OpenApiConfiguration {
 
+	// Supplies title, version, and description read from application.yml.
 	private final OpenApiConfigurationProperties openApiConfigurationProperties;
 	
-	private static final String BEARER_AUTH_COMPONENT_NAME = "Bearer Authentication";	
+	// Identifier Swagger UI uses when it displays the authorization dialog.
+	private static final String BEARER_AUTH_COMPONENT_NAME = "Bearer Authentication";
+	// HTTP authentication scheme that tells Swagger to send `Authorization: Bearer <token>`.
 	private static final String BEARER_AUTH_SCHEME = "Bearer";
 
 	@Bean
 	public OpenAPI openApi() {
+		// Read the documentation metadata rather than hard-coding it in Java.
 		final var properties = openApiConfigurationProperties.getOpenApi();
 		final var info = new Info()
 				.version(properties.getApiVersion())
 				.title(properties.getTitle())
 				.description(properties.getDescription());
 
+		// Register the bearer-token scheme and apply it to documented operations.
 		return new OpenAPI()
 			    .info(info)
 			    .components(new Components()

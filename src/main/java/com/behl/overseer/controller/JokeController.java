@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Joke Generator", description = "Endpoint for generating random unfunny joke")
 public class JokeController {
 
+	// Produces the sample response for the protected, rate-limited endpoint.
 	private final JokeGenerator jokeGenerator;
 
 	@GetMapping(value = "/joke", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -38,6 +39,7 @@ public class JokeController {
 							schema = @Schema(type = "integer")),
 					content = @Content(schema = @Schema(implementation = ExceptionResponseDto.class))) })
 	public ResponseEntity<JokeResponseDto> generate() {
+		// Authentication and quota checks have already run in the security filters.
 		final var response = jokeGenerator.generate();
 		return ResponseEntity.ok(response);
 	}

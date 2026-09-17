@@ -10,6 +10,7 @@ import lombok.Setter;
 @ConfigurationProperties(prefix = "com.behl.overseer")
 public class OpenApiConfigurationProperties {
 
+	// Maps the `com.behl.overseer.open-api` section of application.yml.
 	private OpenAPI openApi = new OpenAPI();
 
 	@Getter
@@ -26,8 +27,11 @@ public class OpenApiConfigurationProperties {
 		 */
 		private boolean enabled;
 		
+		// Title displayed at the top of Swagger UI.
 		private String title;
+		// Version shown in the generated OpenAPI document.
 		private String apiVersion;
+		// Human-readable explanation displayed in Swagger UI.
 		private String description;
 		
 	}

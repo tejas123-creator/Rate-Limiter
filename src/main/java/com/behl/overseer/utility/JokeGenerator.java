@@ -13,8 +13,10 @@ import net.datafaker.providers.entertainment.Joke;
 @Component
 public class JokeGenerator {
 
+	// Datafaker provider used only to create a harmless sample response.
 	private final Joke joke;
 
+	/** Constructs the reusable Datafaker joke provider once when Spring creates this component. */
 	public JokeGenerator() {
 		this.joke = new Faker().joke();
 	}
@@ -25,6 +27,7 @@ public class JokeGenerator {
 	 * @return JokeResponseDto containing the generated joke
 	 */
 	public JokeResponseDto generate() {
+		// Ask Datafaker for a random pun, then expose it through the API response DTO.
 		final var pun = joke.pun();
 		return JokeResponseDto.builder().joke(pun).build();
 	}

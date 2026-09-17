@@ -200,7 +200,7 @@ components:
         EmailId:
           type: string
           description: email-id of user
-          example: hardik.behl7444@gmail.com
+          example: tejas.zunjepatil@example.com
         Password:
           type: string
           description: secure password to enable user login
@@ -221,7 +221,7 @@ components:
           type: string
           description: email-id associated with user account already created in the
             system
-          example: hardik.behl7444@gmail.com
+          example: tejas.zunjepatil@example.com
         Password:
           type: string
           description: password corresponding to provided email-id

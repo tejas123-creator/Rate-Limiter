@@ -18,11 +18,13 @@ public class UserLoginRequestDto {
 
 	@NotBlank(message = "email-id must not be empty")
 	@Email(message = "email-id must be of valid format")
-	@Schema(requiredMode = RequiredMode.REQUIRED, example = "hardik.behl7444@gmail.com", description = "email-id associated with user account already created in the system")
+	@Schema(requiredMode = RequiredMode.REQUIRED, example = "tejas.zunjepatil@example.com", description = "email-id associated with user account already created in the system")
+	// Account email used to find the user during login.
 	private String emailId;
 
 	@NotBlank(message = "password must not be empty")
 	@Schema(requiredMode = RequiredMode.REQUIRED, example = "somethingSecure", description = "password corresponding to provided email-id")
+	// Password compared with the stored BCrypt hash during login.
 	private String password;
 
 }

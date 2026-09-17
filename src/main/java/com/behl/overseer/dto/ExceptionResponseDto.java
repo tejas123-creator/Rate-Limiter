@@ -13,7 +13,9 @@ import lombok.Setter;
 @JsonNaming(value = PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class ExceptionResponseDto<T> {
 
+	// HTTP status represented in the JSON error response.
 	private String status;
+	// Endpoint-specific explanation of the error; generic so it can have any JSON-compatible type.
 	private T description;
 
 }

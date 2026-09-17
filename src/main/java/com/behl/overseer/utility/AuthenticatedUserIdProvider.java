@@ -29,6 +29,7 @@ public class AuthenticatedUserIdProvider {
 	 *                               the JwtAuthenticationFilter
 	 */
 	public UUID getUserId() {
+		// The JWT filter stored the UUID as the Spring Security principal earlier in this request.
 		return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
 		        .map(Authentication::getPrincipal)
 		        .filter(UUID.class::isInstance)
@@ -44,6 +45,7 @@ public class AuthenticatedUserIdProvider {
 	 *         otherwise.
 	 */
 	public boolean isAvailable() {
+		// A missing authentication indicates a public request or an earlier authentication failure.
 		final var authentication = SecurityContextHolder.getContext().getAuthentication();
 		return Optional.ofNullable(authentication).isPresent();
 	}

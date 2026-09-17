@@ -15,6 +15,7 @@ import lombok.extern.jackson.Jacksonized;
 @Schema(title = "Joke", accessMode = Schema.AccessMode.READ_ONLY)
 public class JokeResponseDto {
 	
+	// Generated joke returned by the protected joke endpoint.
 	private String joke;
 
 }

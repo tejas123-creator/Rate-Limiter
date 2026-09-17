@@ -33,9 +33,12 @@ import lombok.NonNull;
 @EnableConfigurationProperties(TokenConfigurationProperties.class)
 public class JwtUtility {
 	
+	// Prefix removed when callers pass a complete Authorization-header value.
 	private static final String BEARER_PREFIX = "Bearer ";
 
+	// Token issuer; validation rejects tokens created for another application.
 	private final String issuer;
+	// Holds the Base64 signing key and token lifespan from application.yml.
 	private final TokenConfigurationProperties tokenConfigurationProperties;
 	
 	public JwtUtility(@Value("${spring.application.name}") final String issuer,
@@ -55,9 +58,11 @@ public class JwtUtility {
 	 * @return The generated JWT access token.
 	 */
 	public String generateAccessToken(@NonNull final UUID userId) {
+		// Store the user UUID as the token audience so the filter can identify the caller later.
 		final var audience = String.valueOf(userId);
 		
 		final var accessTokenValidity = tokenConfigurationProperties.getValidity();
+		// Convert configuration in minutes to the milliseconds expected by java.util.Date.
 		final var expiration = TimeUnit.MINUTES.toMillis(accessTokenValidity);
 		final var currentTimestamp = new Date(System.currentTimeMillis());
 		final var expirationTimestamp = new Date(System.currentTimeMillis() + expiration);
@@ -65,6 +70,7 @@ public class JwtUtility {
 		final var encodedSecretKey = tokenConfigurationProperties.getSecretKey();
 		final var secretKey = getSecretKey(encodedSecretKey);
 		
+		// Sign an HS256 token containing issuer, issue time, expiry, and authenticated user's UUID.
 		return Jwts.builder()
 				.issuer(issuer)
 				.issuedAt(currentTimestamp)
@@ -84,6 +90,7 @@ public class JwtUtility {
 	 * @return The authenticated user's unique identifier (ID) in UUID format.
 	 */
 	public UUID getUserId(@NonNull final String token) {
+		// Extract the audience claim and convert the stored UUID text back to a UUID object.
 		final var audience = extractClaim(token, Claims::getAudience).iterator().next();
 		return UUID.fromString(audience);
 	}
@@ -98,9 +105,11 @@ public class JwtUtility {
 	 * @return The extracted claim value from the JWT token.
 	 */
 	private <T> T extractClaim(@NonNull final String token, @NonNull final Function<Claims, T> claimsResolver) {
+		// Recreate the signing key and remove an optional Bearer prefix before validation.
 		final var encodedSecretKey = tokenConfigurationProperties.getSecretKey();
 		final var secretKey = getSecretKey(encodedSecretKey);
 		final var sanitizedToken = token.replace(BEARER_PREFIX, StringUtils.EMPTY);
+		// Verify issuer, signature, and expiration before exposing any token data.
 		final var claims = Jwts.parser()
 				.requireIssuer(issuer)
 				.verifyWith(secretKey)
@@ -119,6 +128,7 @@ public class JwtUtility {
 	 * @return A {@link SecretKey} instance for JWT signing and verification.
 	 */
 	private SecretKey getSecretKey(@NonNull final String encodedKey) {
+		// Decode the Base64 configuration value into key material suitable for HS256 signing.
 		final var decodedKey = Decoders.BASE64.decode(encodedKey);
 		return Keys.hmacShaKeyFor(decodedKey);
 	}

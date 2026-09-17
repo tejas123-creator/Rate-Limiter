@@ -19,22 +19,28 @@ public class Plan {
 
 	@Id
 	@Column(name = "id", nullable = false, unique = true)
+	// Primary key stored in the plans table.
 	private UUID id;
 
 	@Column(name = "name", nullable = false, unique = true)
+	// Human-readable plan name.
 	private String name;
 
 	@Column(name = "limit_per_hour", nullable = false, unique = true)
+	// Hourly quota used to create a user's Bucket4j bucket.
 	private Integer limitPerHour;
 
 	@Column(name = "created_at", nullable = false)
+	// UTC creation timestamp assigned before the entity is first inserted.
 	private LocalDateTime createdAt;
 
 	@Column(name = "updated_at", nullable = false)
+	// UTC timestamp refreshed whenever this entity is updated.
 	private LocalDateTime updatedAt;
 
 	@PrePersist
 	void onCreate() {
+		// JPA calls this lifecycle hook immediately before INSERT.
 		this.id = UUID.randomUUID();
 		this.createdAt = LocalDateTime.now(ZoneOffset.UTC);
 		this.updatedAt = LocalDateTime.now(ZoneOffset.UTC);
@@ -42,6 +48,7 @@ public class Plan {
 
 	@PreUpdate
 	void onUpdate() {
+		// JPA calls this lifecycle hook immediately before UPDATE.
 		this.updatedAt = LocalDateTime.now(ZoneOffset.UTC);
 	}
 

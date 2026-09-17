@@ -17,8 +17,11 @@ import lombok.extern.jackson.Jacksonized;
 @Schema(title = "Plan", accessMode = Schema.AccessMode.READ_ONLY)
 public class PlanResponseDto {
 
+	// Unique ID clients send when selecting or changing a plan.
 	private UUID id;
+	// Display name, such as FREE, BUSINESS, or PROFESSIONAL.
 	private String name;
+	// Maximum protected-API requests allowed for this plan each hour.
 	private Integer limitPerHour;
 
 }

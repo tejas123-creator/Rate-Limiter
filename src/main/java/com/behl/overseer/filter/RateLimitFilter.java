@@ -53,34 +53,56 @@ import lombok.SneakyThrows;
 @RequiredArgsConstructor
 public class RateLimitFilter extends OncePerRequestFilter {
 
+	// Serializes the standard rate-limit error response to JSON.
 	private final ObjectMapper objectMapper;
+	// Retrieves and consumes the authenticated user's Bucket4j bucket in Redis.
 	private final RateLimitingService rateLimitingService;
+	// Maps the request URL to its controller method to inspect @BypassRateLimit.
 	private final RequestMappingHandlerMapping requestHandlerMapping;
+	// Supplies the user ID authenticated earlier by JwtAuthenticationFilter.
 	private final AuthenticatedUserIdProvider authenticatedUserIdProvider;
+	// Identifies public endpoints, which must not consume a rate-limit token.
 	private final ApiEndpointSecurityInspector apiEndpointSecurityInspector;
 
+	// Client-facing explanation sent when no quota remains.
 	private static final String RATE_LIMIT_ERROR_MESSAGE = "API request limit linked to your current plan has been exhausted.";
+	// HTTP status required for a rejected rate-limited request.
 	private static final HttpStatus RATE_LIMIT_ERROR_STATUS = HttpStatus.TOO_MANY_REQUESTS;
 
+	/**
+	 * Runs after JWT authentication and consumes one token for every rate-limited
+	 * private request. Requests with no remaining token receive HTTP 429 and do
+	 * not reach the controller.
+	 *
+	 * @param request incoming request whose endpoint and authenticated user are inspected
+	 * @param response response used for rate-limit headers or a 429 error
+	 * @param filterChain remaining filters and the controller to call when allowed
+	 */
 	@Override
 	@SneakyThrows
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+		// Public endpoints are deliberately excluded from user quota checks.
 		final var unsecuredApiBeingInvoked = apiEndpointSecurityInspector.isUnsecureRequest(request);
 
 		if (Boolean.FALSE.equals(unsecuredApiBeingInvoked) && authenticatedUserIdProvider.isAvailable()) {
+			// Certain private endpoints, such as changing plan, explicitly bypass rate limiting.
 			final var isRequestBypassed = isBypassed(request);
 
 			if (Boolean.FALSE.equals(isRequestBypassed)) {
+				// Each user has an independent Redis bucket, identified by their UUID.
 				final var userId = authenticatedUserIdProvider.getUserId();
 				final var bucket = rateLimitingService.getBucket(userId);
+				// Attempt to spend one token and also obtain remaining-token/refill information.
 				final var consumptionProbe = bucket.tryConsumeAndReturnRemaining(1);
 				final var isConsumptionPassed = consumptionProbe.isConsumed();
 
 				if (Boolean.FALSE.equals(isConsumptionPassed)) {
+					// Stop now so an exhausted user cannot execute the controller method.
 					setRateLimitErrorDetails(response, consumptionProbe);
 					return;
 				}
 
+				// Help clients display or respect the remaining quota.
 				final var remainingTokens = consumptionProbe.getRemainingTokens();
 				response.setHeader("X-Rate-Limit-Remaining", String.valueOf(remainingTokens));
 			}
@@ -98,6 +120,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	 */
 	@SneakyThrows
 	private boolean isBypassed(HttpServletRequest request) {
+		// Resolve the request to its controller method so annotations can be inspected at runtime.
 		var handlerChain = requestHandlerMapping.getHandler(request);
 		if (handlerChain != null && handlerChain.getHandler() instanceof HandlerMethod handlerMethod) {
 			return handlerMethod.getMethod().isAnnotationPresent(BypassRateLimit.class);
@@ -115,9 +138,11 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	 */
 	@SneakyThrows
 	private void setRateLimitErrorDetails(HttpServletResponse response, final ConsumptionProbe consumptionProbe) {
+		// Mark the request as rejected and return JSON, matching other project errors.
 		response.setStatus(RATE_LIMIT_ERROR_STATUS.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
+		// Convert Bucket4j's nanosecond refill time into a useful response header for clients.
 		final var waitPeriod = TimeUnit.NANOSECONDS.toSeconds(consumptionProbe.getNanosToWaitForRefill());
 		response.setHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitPeriod));
 
@@ -131,6 +156,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
 	 */
 	@SneakyThrows
 	private String prepareErrorResponseBody() {
+		// Build the common error DTO before serializing it to a JSON string.
 		final var exceptionResponse = new ExceptionResponseDto<String>();
 		exceptionResponse.setStatus(RATE_LIMIT_ERROR_STATUS.toString());
 		exceptionResponse.setDescription(RATE_LIMIT_ERROR_MESSAGE);
